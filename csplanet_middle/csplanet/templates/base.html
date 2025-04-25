@@ -1,0 +1,140 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}{% trans "Tok! CS" %}{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Pretendard Variable (토스가 쓰는 깔끔한 한글 UI폰트) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/pretendard/dist/web/variable/pretendardvariable.css"
+    />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* 전체 폰트 설정 */
+      body {
+        font-family: "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+          "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        background-color: #f9f9f9;
+      }
+
+      /* 상단바: 흰 배경 + 가벼운 섀도우 */
+      .navbar {
+        background-color: #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+      .navbar-brand {
+        font-weight: 600;
+        transition: opacity 0.2s;
+      }
+      .navbar-brand:active {
+        opacity: 0.6;
+      }
+
+      /* 사이드바: 상단바 아래부터 화면 끝까지 */
+      .sidebar {
+        position: fixed;
+        top: 56px; /* navbar 높이만큼 */
+        bottom: 0;
+        left: 0;
+        width: 16.6667%; /* col-md-2 비율 */
+        padding-top: 1rem;
+        background-color: #fff;
+        overflow-y: auto;
+        border-right: 1px solid #e5e5e5;
+      }
+      /* 사이드바 링크 */
+      .sidebar .nav-link {
+        color: #495057;
+        padding: 0.75rem 1rem;
+        border-radius: 0.375rem;
+        transition: background-color 0.15s;
+      }
+      .sidebar .nav-link:hover {
+        background-color: #f0f8ff;
+      }
+      .sidebar .nav-link.active {
+        background-color: #e7f5ff;
+        color: #0064ff;
+      }
+
+      /* 콘텐츠 영역: sidebar 너비만큼 margin */
+      .main-content {
+        margin-top: 56px;
+        margin-left: 16.6667%;
+        padding: 1.5rem;
+      }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- 상단 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">Tok! CS</a>
+        <div class="d-flex">
+          {% if user.is_authenticated %}
+          <span class="navbar-text">{{ user.username }}님</span>
+          {% else %}
+          <span class="navbar-text">{% trans "비로그인 사용자" %}</span>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+            href="{% url 'home' %}"
+          >
+            {% trans "홈 화면" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'solve_problems' %}active{% endif %}"
+            href="{% url 'problems:solve_problems' %}"
+          >
+            {% trans "문제 풀러가기" %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if request.resolver_match.url_name == 'select_problem_type' %}active{% endif %}"
+            href="{% url 'problems:select_problem_type' %}"
+          >
+            {% trans "문제 출제하기" %}
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <main class="main-content">
+      {% block content %}
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">{% trans "환영합니다!" %}</h2>
+          <p class="card-text">
+            {% trans "이 영역에 페이지별 구체적인 내용이 표시됩니다." %}
+          </p>
+        </div>
+      </div>
+      {% endblock %}
+    </main>
+
+    <!-- Bootstrap Bundle (Popper 포함) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %} {% block scripts_extra %}{% endblock %}
+  </body>
+</html>

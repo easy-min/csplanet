@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %}문제 내러가기 - Tok! CS{% endblock %}
+{% block content %}
+<div class="content-card">
+  <h2>문제 내러가기</h2>
+  <ul>
+    <li>
+      <a href="{% url 'problems:create_objective' %}">객관식 문제 출제하기</a>
+    </li>
+    <li>
+      <a href="{% url 'problems:create_subjective' %}">주관식 문제 출제하기</a>
+    </li>
+  </ul>
+</div>
+{% endblock %}
