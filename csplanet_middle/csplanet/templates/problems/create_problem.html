@@ -1,14 +1,50 @@
 {% extends "base.html" %} {% block title %}문제 내러가기 - Tok! CS{% endblock %}
-{% block content %}
-<div class="content-card">
-  <h2>문제 내러가기</h2>
-  <ul>
-    <li>
-      <a href="{% url 'problems:create_objective' %}">객관식 문제 출제하기</a>
-    </li>
-    <li>
-      <a href="{% url 'problems:create_subjective' %}">주관식 문제 출제하기</a>
-    </li>
-  </ul>
+{% block extra_css %}
+<style>
+  .card-option {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container my-5">
+  <h2 class="mb-4 text-center">문제 내러가기</h2>
+  <div class="row g-4">
+    <div class="col-md-6">
+      <a
+        href="{% url 'problems:create_objective' %}"
+        class="text-decoration-none"
+      >
+        <div class="card card-option h-100">
+          <div class="card-body text-center">
+            <i class="bi bi-list-task" style="font-size: 3rem"></i>
+            <h5 class="card-title mt-3">객관식 문제 출제하기</h5>
+            <p class="card-text">
+              선택지를 작성하고 정답을 설정하여 객관식 문항을 만듭니다.
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a
+        href="{% url 'problems:create_subjective' %}"
+        class="text-decoration-none"
+      >
+        <div class="card card-option h-100">
+          <div class="card-body text-center">
+            <i class="bi bi-pencil-square" style="font-size: 3rem"></i>
+            <h5 class="card-title mt-3">주관식 문제 출제하기</h5>
+            <p class="card-text">
+              답변 키워드를 설정하여 주관식 문항을 만들어보세요.
+            </p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
 </div>
 {% endblock %}
