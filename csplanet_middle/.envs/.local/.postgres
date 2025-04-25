@@ -1,0 +1,8 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=csplanet
+POSTGRES_USER=csplanet_local
+POSTGRES_PASSWORD=1234
+DATABASE_URL=postgres://csplanet:1234@postgres:5432/csplanet_local
