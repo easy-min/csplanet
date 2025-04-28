@@ -1,5 +1,16 @@
-# csplanet/apps/problems/views/__init__.py
-from .solve_problem import solve_problems
+# apps/problems/views/__init__.py
+
+from .create_objective   import objective_upsert, detail_objective
+from .create_subjective import subjective_upsert, detail_subjective
+from .solve_problem     import solve_problems    # ← 이 줄을 추가
 from .create_problem import select_problem_type
-from .create_objective import create_objective
-from .create_subjective import create_subjective
+
+__all__ = [
+    'objective_upsert',
+    'detail_objective',
+    'solve_problems',    
+    'select_problem_type',
+    'create_subjective',
+    'subjective_upsert', 
+    'detail_subjective',
+]

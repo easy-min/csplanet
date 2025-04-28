@@ -57,3 +57,7 @@ class QuestionKeywordMappingAdmin(admin.ModelAdmin):
     list_filter   = ('importance', 'keyword')
     search_fields = ('keyword__name',)
 
+@admin.register(SubjectiveKeyword)
+class SubjectiveKeywordAdmin(admin.ModelAdmin):
+    list_display  = ('id', 'word', 'synonyms')
+    search_fields = ('word',)

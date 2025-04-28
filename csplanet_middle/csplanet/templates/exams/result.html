@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% block title %}Result{% endblock %} {% block content
+%}
+<div class="container my-5 text-center">
+  <h2>{{ result.session.exam.title }} - Your Score</h2>
+  <p>Total Score: {{ result.total_score }}</p>
+  <p>Status: <strong>{{ result.status }}</strong></p>
+  <a href="{% url 'exams:exam_available' %}" class="btn btn-primary"
+    >Back to Tests</a
+  >
+</div>

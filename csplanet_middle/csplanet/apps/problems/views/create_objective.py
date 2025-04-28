@@ -1,78 +1,64 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_http_methods
+# apps/problems/views/objective_upsert.py
 
-from ..forms.forms import ObjectiveQuestionForm, ObjectiveChoiceFormSet
-from ..models.objective_problem import ObjectiveProblem
-from ..models.base_problem import BaseProblem
-from ..models.topic import Topic
-from ..models.chapter import Chapter
+from django.shortcuts                import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http    import require_http_methods
 
+from ..forms.forms                  import ObjectiveQuestionForm, ObjectiveChoiceFormSet
+from ..models.objective_problem     import ObjectiveProblem
+from ..models.base_problem          import BaseProblem
+from ..models.topic                 import Topic
+from ..models.chapter               import Chapter
+
+@login_required
 @require_http_methods(["GET", "POST"])
-def create_objective(request):
-    topics = Topic.objects.all()
+def objective_upsert(request, pk=None):
+    # 1) instance 결정: pk 있으면 edit, 없으면 create
+    problem  = get_object_or_404(ObjectiveProblem, pk=pk) if pk else None
+    topics   = Topic.objects.all()
     chapters = Chapter.objects.all()
 
     if request.method == "POST":
-        form = ObjectiveQuestionForm(request.POST)
-        obj_q = None
-
-        if form.is_valid():
-            obj_q = form.save(commit=False)
-            obj_q.topic = obj_q.chapter.topic
-            obj_q.creator = request.user
-            obj_q.question_type = BaseProblem.MCQ
-            obj_q.save()
-
-        formset = ObjectiveChoiceFormSet(
-            request.POST,
-            instance=obj_q or ObjectiveProblem()
-        )
-
-        if form.is_valid() and formset.is_valid():
-            formset.save()
-            return redirect('problems:detail_objective', pk=obj_q.pk)
-    else:
-        form = ObjectiveQuestionForm()
-        formset = ObjectiveChoiceFormSet(instance=ObjectiveProblem())
-
-    return render(request, 'problems/create_objective.html', {
-        'form': form,
-        'formset': formset,
-        'topics': topics,
-        'chapters': chapters,
-    })
-
-@require_http_methods(["GET"])
-def detail_objective(request, pk):
-    problem = get_object_or_404(ObjectiveProblem, pk=pk)
-    return render(request, 'problems/objective_detail.html', {
-        'problem': problem
-    })
-
-@require_http_methods(["GET", "POST"])
-def edit_objective(request, pk):
-    problem = get_object_or_404(ObjectiveProblem, pk=pk)
-    topics = Topic.objects.all()
-    chapters = Chapter.objects.all()
-
-    if request.method == "POST":
-        form = ObjectiveQuestionForm(request.POST, instance=problem)
+        #print(request.POST)
+        form    = ObjectiveQuestionForm(request.POST, instance=problem)
         formset = ObjectiveChoiceFormSet(request.POST, instance=problem)
 
         if form.is_valid() and formset.is_valid():
-            form.save()
+            # 2) 문제 저장(commit=False → topic, creator, type 설정)
+            obj = form.save(commit=False)
+            obj.topic = obj.chapter.topic
+            if problem is None:
+                obj.creator       = request.user
+                obj.question_type = BaseProblem.MCQ
+            obj.save()
+
+            # 3) formset.instance 갱신 및 저장(DELETE 포함)
+            formset.instance = obj
             formset.save()
-            return redirect('problems:detail_objective', pk=problem.pk)
+
+            return redirect('problems:detail_objective', pk=obj.pk)
+        # 유효성 에러 시 fall through → 같은 form/formset 그대로 렌더링
+
     else:
-        form = ObjectiveQuestionForm(instance=problem)
+        # GET: 새 폼 / edit 폼
+        form    = ObjectiveQuestionForm(instance=problem)
         formset = ObjectiveChoiceFormSet(instance=problem)
 
     return render(request, 'problems/create_objective.html', {
-        'form': form,
-        'formset': formset,
-        'topics': topics,
+        'form':     form,
+        'formset':  formset,
+        'topics':   topics,
         'chapters': chapters,
-        'problem':problem,
-        'edit': True,
-        
+        'problem':  problem,
+        'edit':     bool(pk),
+    })
+@login_required
+@require_http_methods(["GET"])
+def detail_objective(request, pk):
+    """
+    객관식 문제 상세 보기
+    """
+    problem = get_object_or_404(ObjectiveProblem, pk=pk)
+    return render(request, 'problems/objective_detail.html', {
+        'problem': problem
     })
