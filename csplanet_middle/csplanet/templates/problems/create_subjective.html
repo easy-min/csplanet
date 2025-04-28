@@ -1,23 +1,27 @@
 {# templates/problems/create_subjective.html #}
 {% extends "base.html" %}
 
-{% block title %}주관식 문제 출제하기 - Tok! CS{% endblock %}
+{% block title %}{% if edit %}주관식 문제 수정{% else %}주관식 문제 출제하기{% endif %}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-  <h2 class="mb-4">주관식 문제 출제하기</h2>
-  <form method="post" id="subjective-form">
+  <h2 class="mb-4">{% if edit %}주관식 문제 수정{% else %}주관식 문제 출제하기{% endif %}</h2>
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+  {% if formset.non_form_errors %}
+    <div class="alert alert-danger">{{ formset.non_form_errors }}</div>
+  {% endif %}
+
+  <form method="post" id="subjective-form" data-edit="{{ edit|yesno:'true,false' }}">
     {% csrf_token %}
-
-    {{ form.non_field_errors }}
-    {{ formset.non_form_errors }}
-
     {{ formset.management_form }}
 
     <!-- Topic 선택 -->
     <div class="mb-3">
-      <label for="topic" class="form-label">Topic 선택</label>
-      <select id="topic" name="topic" class="form-select" required>
+      <label class="form-label">Topic 선택</label>
+      <select name="topic" class="form-select" required>
         <option value="">-- Topic 선택 --</option>
         {% for topic in topics %}
           <option value="{{ topic.id }}"
@@ -26,53 +30,40 @@
           </option>
         {% endfor %}
       </select>
-      {% for err in form.topic.errors %}
-        <div class="text-danger small">{{ err }}</div>
-      {% endfor %}
+      {% for err in form.topic.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
     </div>
 
     <!-- Chapter 선택 -->
     <div class="mb-3">
-      <label for="id_chapter" class="form-label">Chapter 선택</label>
-      <select id="id_chapter" name="chapter" class="form-select" required>
+      <label class="form-label">Chapter 선택</label>
+      <select name="chapter" class="form-select" required>
         <option value="">-- Chapter 선택 --</option>
         {% for ch in chapters %}
-          <option value="{{ ch.id }}" data-topic="{{ ch.topic_id }}"
+          <option value="{{ ch.id }}" data-topic="{{ ch.topic.id }}"
             {% if form.chapter.value|stringformat:'s' == ch.id|stringformat:'s' %}selected{% endif %}>
             {{ ch.name }}
           </option>
         {% endfor %}
       </select>
-      {% for err in form.chapter.errors %}
-        <div class="text-danger small">{{ err }}</div>
-      {% endfor %}
+      {% for err in form.chapter.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
     </div>
 
-    <!-- 문제·해설·배점 -->
+    <!-- 문제/해설/배점 -->
     <div class="mb-3">
-      {{ form.content.label_tag }}<br>
-      {{ form.content }}
-      {% for err in form.content.errors %}
-        <div class="text-danger small">{{ err }}</div>
-      {% endfor %}
+      {{ form.content.label_tag }}<br>{{ form.content }}
+      {% for err in form.content.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
     </div>
     <div class="mb-3">
-      {{ form.explanation.label_tag }}<br>
-      {{ form.explanation }}
-      {% for err in form.explanation.errors %}
-        <div class="text-danger small">{{ err }}</div>
-      {% endfor %}
+      {{ form.explanation.label_tag }}<br>{{ form.explanation }}
+      {% for err in form.explanation.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
     </div>
     <div class="mb-3">
-      {{ form.score.label_tag }}<br>
-      {{ form.score }}
-      {% for err in form.score.errors %}
-        <div class="text-danger small">{{ err }}</div>
-      {% endfor %}
+      {{ form.score.label_tag }}<br>{{ form.score }}
+      {% for err in form.score.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
     </div>
 
     <!-- 키워드 폼셋 -->
-    <h4 class="mt-4">채점용 키워드 & 중요도</h4>
+    <h4 class="mt-4">채점용 키워드 & 중요도 (최소 1~최대 7개)</h4>
     <table class="table table-borderless align-middle">
       <thead>
         <tr>
@@ -85,16 +76,13 @@
         {% for fs in formset %}
         <tr class="kw-row">
           <td>
+            {{ fs.id }}  {# 수정 시 기존 매핑 ID(hidden) #}
             {{ fs.keyword }}
-            {% for err in fs.keyword.errors %}
-              <div class="text-danger small">{{ err }}</div>
-            {% endfor %}
+            {% for err in fs.keyword.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
           </td>
           <td class="text-center">
             {{ fs.importance }}
-            {% for err in fs.importance.errors %}
-              <div class="text-danger small">{{ err }}</div>
-            {% endfor %}
+            {% for err in fs.importance.errors %}<div class="text-danger small">{{ err }}</div>{% endfor %}
           </td>
           <td class="text-center">
             {{ fs.DELETE }}
@@ -102,8 +90,8 @@
           </td>
         </tr>
         {% endfor %}
-        <tr id="kw-tpl" class="kw-row" style="display:none">
-          <td>{{ formset.empty_form.keyword }}</td>
+        <tr id="kw-tpl" class="kw-row" style="display:none;">
+          <td>{{ formset.empty_form.id }} {{ formset.empty_form.keyword }}</td>
           <td class="text-center">{{ formset.empty_form.importance }}</td>
           <td class="text-center">
             {{ formset.empty_form.DELETE }}
@@ -115,8 +103,10 @@
     <button type="button" id="add-kw" class="btn btn-outline-secondary mb-4">키워드 추가하기</button>
 
     <div class="d-flex justify-content-between">
-      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">이어서 계속 작성</button>
-      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">문제 제출하기</button>
+      <button type="submit" class="btn btn-primary">{% if edit %}수정 완료{% else %}제출{% endif %}</button>
+      {% if edit %}
+      <a href="{% url 'problems:detail_subjective' form.instance.pk %}" class="btn btn-secondary">미리보기</a>
+      {% endif %}
     </div>
   </form>
 </div>
@@ -124,50 +114,43 @@
 
 {% block extra_js %}
 <script>
-// Django 폼셋 관리 로직 + Topic- Chapter 필터링
 document.addEventListener("DOMContentLoaded", () => {
-  // Topic → Chapter 필터링
-  const topicSelect = document.getElementById("topic");
-  const chapterSelect = document.getElementById("id_chapter");
-  const allChapters = Array.from(chapterSelect.querySelectorAll("option"));
-  function filterCh() {
-    const sel = topicSelect.value;
-    chapterSelect.innerHTML = "";
-    const placeholder = allChapters.find(o => o.value === "");
-    chapterSelect.appendChild(placeholder.cloneNode(true));
-    allChapters.forEach(o => {
-      if (o.value !== "" && o.dataset.topic === sel) {
-        chapterSelect.appendChild(o.cloneNode(true));
+  const body      = document.getElementById('kw-body');
+  const totalInput= document.querySelector('input[name="kw-TOTAL_FORMS"]');
+  const minForms  = +document.querySelector('input[name="kw-MIN_NUM_FORMS"]')?.value || 1;
+  const maxForms  = +document.querySelector('input[name="kw-MAX_NUM_FORMS"]')?.value || 7;
+  let   count     = +totalInput.value;
+
+  function attachDel(btn) {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const visible = Array.from(body.querySelectorAll('.kw-row'))
+                         .filter(r => r.style.display!=='none' && r.id!=='kw-tpl');
+      if (visible.length <= minForms) {
+        return alert(`최소 ${minForms}개 필요합니다.`);
       }
+      const row = btn.closest('.kw-row');
+      const del = row.querySelector('input[name$="-DELETE"]');
+      if (del.type==='checkbox') del.checked = true;
+      else del.value = 'True';
+      row.style.display = 'none';
     });
   }
-  topicSelect.addEventListener("change", filterCh);
-  filterCh();
 
-  // 키워드 폼셋 스크립트
-  const body = document.getElementById("kw-body");
-  const total = document.querySelector('input[name="kw-TOTAL_FORMS"]');
-  const MIN = 1, MAX = 7;
+  body.querySelectorAll('.delete-row').forEach(attachDel);
 
-  document.getElementById("add-kw").addEventListener("click", () => {
-    const visible = Array.from(body.querySelectorAll(".kw-row:not(#kw-tpl)"))
-      .filter(r => window.getComputedStyle(r).display !== 'none');
-    if (visible.length >= MAX) return alert(`최대 ${MAX}개까지만 추가할 수 있습니다.`);
-    const count = +total.value;
-    const tpl = document.getElementById("kw-tpl").cloneNode(true);
-    tpl.removeAttribute("id"); tpl.style.display = ""; tpl.classList.add("kw-row");
+  document.getElementById('add-kw').addEventListener('click', () => {
+    const visible = Array.from(body.querySelectorAll('.kw-row'))
+                      .filter(r => r.style.display!=='none' && r.id!=='kw-tpl');
+    if (visible.length >= maxForms) {
+      return alert(`최대 ${maxForms}개만 가능합니다.`);
+    }
+    const tpl = document.getElementById('kw-tpl').cloneNode(true);
+    tpl.id = ''; tpl.style.display = '';
     tpl.innerHTML = tpl.innerHTML.replace(/__prefix__/g, count);
-    total.value = count + 1;
     body.appendChild(tpl);
-  });
-  body.addEventListener("click", e => {
-    if (!e.target.classList.contains("delete-row")) return;
-    const visible = Array.from(body.querySelectorAll(".kw-row:not(#kw-tpl)"))
-      .filter(r => window.getComputedStyle(r).display !== 'none');
-    if (visible.length <= MIN) return alert(`최소 ${MIN}개의 키워드가 필요합니다.`);
-    const row = e.target.closest(".kw-row");
-    row.querySelector('input[name$="-DELETE"]').checked = true;
-    row.style.display = "none";
+    count++; totalInput.value = count;
+    attachDel(tpl.querySelector('.delete-row'));
   });
 });
 </script>

@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block title %} {% if form.instance.pk %}Edit Exam{%
+else %}Create Exam{% endif %} {% endblock %} {% block content %}
+<div class="container my-5">
+  <h2>{% if form.instance.pk %}Edit Exam{% else %}Create Exam{% endif %}</h2>
+  <form method="post">
+    {% csrf_token %} {{ form.non_field_errors }}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">{{ form.title.label_tag }} {{ form.title }}</div>
+        <div class="mb-3">
+          {{ form.start_datetime.label_tag }} {{ form.start_datetime }}
+        </div>
+        <div class="mb-3">
+          {{ form.end_datetime.label_tag }} {{ form.end_datetime }}
+        </div>
+        <div class="mb-3">
+          {{ form.total_questions.label_tag }} {{ form.total_questions }}
+        </div>
+        <div class="mb-3">
+          {{ form.chapters.label_tag }} {{ form.chapters }}
+        </div>
+        <div class="mb-3">
+          {{ form.objective_ratio.label_tag }} {{ form.objective_ratio }}
+        </div>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a href="{% url 'exams:exam_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

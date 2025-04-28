@@ -1,33 +1,23 @@
 # csplanet/apps/problems/urls.py
 
 from django.urls import path
-
-# 새로 만든 뷰 함수들을 import
-from .views.create_objective import (
-    create_objective,
-    detail_objective,
-    edit_objective,
-)
-from .views import (
-    solve_problems,
-    select_problem_type,
-    create_subjective,
-)
+from .views.create_objective  import objective_upsert, detail_objective
+from .views.create_subjective import subjective_upsert, detail_subjective
+from .views                    import solve_problems, select_problem_type
 
 app_name = 'problems'
 
 urlpatterns = [
-    # 객관식/주관식 출제 선택
-    path('create/',            select_problem_type,   name='select_problem_type'),
+    path('create/',                 select_problem_type,   name='select_problem_type'),
+    path('solve/',                  solve_problems,        name='solve_problems'),
 
-    # 문제 풀러가기
-    path('solve/',             solve_problems,        name='solve_problems'),
-
-    # — 객관식 문제 생성/상세/수정 —
-    path('objective/create/',  create_objective,      name='create_objective'),
+    # 객관식
+    path('objective/create/',       objective_upsert,      name='create_objective'),
     path('objective/<int:pk>/',     detail_objective,      name='detail_objective'),
-    path('objective/<int:pk>/edit/', edit_objective,        name='edit_objective'),
+    path('objective/<int:pk>/edit/',objective_upsert,      name='edit_objective'),
 
-    # 주관식 문제 생성
-    path('subjective/create/', create_subjective,     name='create_subjective'),
+    # 주관식
+    path('subjective/create/',      subjective_upsert,     name='create_subjective'),
+    path('subjective/detail/<int:pk>/', detail_subjective,  name='detail_subjective'),
+    path('subjective/<int:pk>/edit/',    subjective_upsert,  name='edit_subjective'),
 ]

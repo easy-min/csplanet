@@ -1,0 +1,7 @@
+{% extends "base.html" %} {% block title %}Unavailable{% endblock %} {% block
+content %}
+<div class="container text-center my-5">
+  <h3>Exam is not available now.</h3>
+  <p>Please check the exam schedule and try again later.</p>
+  <a href="{% url 'exams:exam_available' %}" class="btn btn-secondary">Back</a>
+</div>
