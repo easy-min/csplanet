@@ -1,0 +1,59 @@
+{# templates/problems/objective_detail.html #}
+{% extends "base.html" %}
+
+{% block title %}문제 상세보기 - Tok! CS{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">문제 상세보기</h2>
+
+  <dl class="row">
+    <dt class="col-sm-3">Topic</dt>
+    <dd class="col-sm-9">{{ problem.topic.name }}</dd>
+
+    <dt class="col-sm-3">Chapter</dt>
+    <dd class="col-sm-9">{{ problem.chapter.name }}</dd>
+
+    <dt class="col-sm-3">문제 내용</dt>
+    <dd class="col-sm-9">{{ problem.content }}</dd>
+
+    <dt class="col-sm-3">정답 보기</dt>
+    <dd class="col-sm-9">
+      <ul class="list-group">
+        {% for choice in problem.choices.all %}
+          <li class="list-group-item {% if choice.is_correct %}list-group-item-success{% endif %}">
+            {{ choice.content }}
+            {% if choice.is_correct %}<strong>(정답)</strong>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </dd>
+
+    <dt class="col-sm-3">해설</dt>
+    <dd class="col-sm-9">{{ problem.explanation }}</dd>
+
+    <dt class="col-sm-3">배점</dt>
+    <dd class="col-sm-9">{{ problem.score }}</dd>
+  </dl>
+
+  <div class="mt-4 d-flex justify-content-between">
+    <!-- 수정하기 -->
+    <a href="{% url 'problems:edit_objective' problem.id %}"
+       class="btn btn-outline-secondary">
+      수정하기
+    </a>
+
+    <!-- 이어서 문제 제출하기 -->
+    <a href="{% url 'problems:create_objective' %}"
+       class="btn btn-warning">
+      이어서 문제 제출하기
+    </a>
+
+    <!-- 끝내기 (목록으로 돌아가기 등) -->
+    <a href="{% url 'problems:select_problem_type' %}"
+       class="btn btn-primary">
+      끝내기
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -15,9 +15,14 @@ from ..models.subjective_problem  import (
 # ──────────────────────────────────────────
 class ObjectiveQuestionForm(forms.ModelForm):
     """객관식 문제 생성/수정 폼"""
+    # score를 필수가 아니게 덮어쓰기
+    score = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class':'form-control'})
+    )
     class Meta:
         model   = ObjectiveProblem
-        exclude = ['creator', 'created_at', 'q_type', 'question_type']
+        exclude = ['creator', 'created_at', 'q_type', 'question_type', 'topic']
         widgets = {
             'chapter'    : forms.Select(attrs={'class': 'form-select'}),
             'content'    : forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -33,7 +38,7 @@ ObjectiveChoiceFormSet = inlineformset_factory(
     ObjectiveProblem,
     ObjectiveChoice,
     fields       = ['content', 'is_correct'],
-    extra        = 2,   # 기본 2개
+    extra        = 2,   
     max_num      = 7,
     min_num      = 2,
     validate_min = True,
