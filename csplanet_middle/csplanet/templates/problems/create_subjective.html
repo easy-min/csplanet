@@ -9,23 +9,29 @@
   <form method="post" id="subjective-form">
     {% csrf_token %}
 
-    {# — 전역 에러 — #}
     {{ form.non_field_errors }}
     {{ formset.non_form_errors }}
 
-    {# management form (prefix='kw') #}
     {{ formset.management_form }}
 
-    <!-- Topic / Chapter -->
+    <!-- Topic 선택 -->
     <div class="mb-3">
       <label for="topic" class="form-label">Topic 선택</label>
-      <select id="topic" class="form-select">
+      <select id="topic" name="topic" class="form-select" required>
         <option value="">-- Topic 선택 --</option>
         {% for topic in topics %}
-          <option value="{{ topic.id }}">{{ topic.name }}</option>
+          <option value="{{ topic.id }}"
+            {% if form.topic.value|stringformat:'s' == topic.id|stringformat:'s' %}selected{% endif %}>
+            {{ topic.name }}
+          </option>
         {% endfor %}
       </select>
+      {% for err in form.topic.errors %}
+        <div class="text-danger small">{{ err }}</div>
+      {% endfor %}
     </div>
+
+    <!-- Chapter 선택 -->
     <div class="mb-3">
       <label for="id_chapter" class="form-label">Chapter 선택</label>
       <select id="id_chapter" name="chapter" class="form-select" required>
@@ -97,12 +103,8 @@
         </tr>
         {% endfor %}
         <tr id="kw-tpl" class="kw-row" style="display:none">
-          <td>
-            {{ formset.empty_form.keyword }}
-          </td>
-          <td class="text-center">
-            {{ formset.empty_form.importance }}
-          </td>
+          <td>{{ formset.empty_form.keyword }}</td>
+          <td class="text-center">{{ formset.empty_form.importance }}</td>
           <td class="text-center">
             {{ formset.empty_form.DELETE }}
             <button type="button" class="btn btn-sm btn-outline-danger delete-row">삭제</button>
@@ -110,17 +112,11 @@
         </tr>
       </tbody>
     </table>
-    <button type="button" id="add-kw" class="btn btn-outline-secondary mb-4">
-      키워드 추가하기
-    </button>
+    <button type="button" id="add-kw" class="btn btn-outline-secondary mb-4">키워드 추가하기</button>
 
     <div class="d-flex justify-content-between">
-      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">
-        이어서 계속 작성
-      </button>
-      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">
-        문제 제출하기
-      </button>
+      <button type="submit" name="submit_type" value="continue" class="btn btn-warning">이어서 계속 작성</button>
+      <button type="submit" name="submit_type" value="finish" class="btn btn-primary">문제 제출하기</button>
     </div>
   </form>
 </div>
@@ -128,40 +124,51 @@
 
 {% block extra_js %}
 <script>
-(function(){
-  const body  = document.getElementById("kw-body");
+// Django 폼셋 관리 로직 + Topic- Chapter 필터링
+document.addEventListener("DOMContentLoaded", () => {
+  // Topic → Chapter 필터링
+  const topicSelect = document.getElementById("topic");
+  const chapterSelect = document.getElementById("id_chapter");
+  const allChapters = Array.from(chapterSelect.querySelectorAll("option"));
+  function filterCh() {
+    const sel = topicSelect.value;
+    chapterSelect.innerHTML = "";
+    const placeholder = allChapters.find(o => o.value === "");
+    chapterSelect.appendChild(placeholder.cloneNode(true));
+    allChapters.forEach(o => {
+      if (o.value !== "" && o.dataset.topic === sel) {
+        chapterSelect.appendChild(o.cloneNode(true));
+      }
+    });
+  }
+  topicSelect.addEventListener("change", filterCh);
+  filterCh();
+
+  // 키워드 폼셋 스크립트
+  const body = document.getElementById("kw-body");
   const total = document.querySelector('input[name="kw-TOTAL_FORMS"]');
   const MIN = 1, MAX = 7;
 
-  // 키워드 추가: 보이는 행 기준 MAX 체크
   document.getElementById("add-kw").addEventListener("click", () => {
     const visible = Array.from(body.querySelectorAll(".kw-row:not(#kw-tpl)"))
-                         .filter(r => window.getComputedStyle(r).display !== 'none');
-    if (visible.length >= MAX) {
-      return alert(`최대 ${MAX}개까지만 추가할 수 있습니다.`);
-    }
+      .filter(r => window.getComputedStyle(r).display !== 'none');
+    if (visible.length >= MAX) return alert(`최대 ${MAX}개까지만 추가할 수 있습니다.`);
     const count = +total.value;
-    const tpl   = document.getElementById("kw-tpl").cloneNode(true);
-    tpl.removeAttribute("id");
-    tpl.style.display = "";
-    tpl.classList.add("kw-row");
+    const tpl = document.getElementById("kw-tpl").cloneNode(true);
+    tpl.removeAttribute("id"); tpl.style.display = ""; tpl.classList.add("kw-row");
     tpl.innerHTML = tpl.innerHTML.replace(/__prefix__/g, count);
     total.value = count + 1;
     body.appendChild(tpl);
   });
-
-  // 키워드 삭제: 보이는 행 기준 MIN 체크
   body.addEventListener("click", e => {
     if (!e.target.classList.contains("delete-row")) return;
     const visible = Array.from(body.querySelectorAll(".kw-row:not(#kw-tpl)"))
-                         .filter(r => window.getComputedStyle(r).display !== 'none');
-    if (visible.length <= MIN) {
-      return alert(`최소 ${MIN}개의 키워드가 필요합니다.`);
-    }
+      .filter(r => window.getComputedStyle(r).display !== 'none');
+    if (visible.length <= MIN) return alert(`최소 ${MIN}개의 키워드가 필요합니다.`);
     const row = e.target.closest(".kw-row");
     row.querySelector('input[name$="-DELETE"]').checked = true;
-    row.style.display = 'none';
+    row.style.display = "none";
   });
-})();
+});
 </script>
 {% endblock %}
