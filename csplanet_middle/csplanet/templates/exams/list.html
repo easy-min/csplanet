@@ -1,42 +1,44 @@
-<!-- File: templates/exams/list.html -->
 {% extends "base.html" %}
-
-{% block title %}
-Exam List
-{% endblock %}
+{% block title %}전체 시험 관리{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-  <h2>Available Exams</h2>
-  <a class="btn btn-primary mb-3" href="{% url 'exams:exam_create' %}">
-    Create New Exam
-  </a>
-  <table class="table table-bordered">
+  <h2>전체 시험 목록</h2>
+  <table class="table table-hover mt-3">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Actions</th>
+        <th>#</th>
+        <th>제목</th>
+        <th>문제 수</th>
+        <th>기간</th>
+        <th>상태</th>
+        <th>조치</th>
       </tr>
     </thead>
     <tbody>
       {% for exam in exams %}
         <tr>
-          <td>{{ exam.id }}</td>
+          <td>{{ forloop.counter }}</td>
           <td>{{ exam.title }}</td>
-          <td>{{ exam.start_datetime }}</td>
-          <td>{{ exam.end_datetime }}</td>
+          <td>{{ exam.questions.count }}</td>
           <td>
-            <a class="btn btn-sm btn-info" href="{% url 'exams:exam_edit' exam.id %}">
-              Edit
-            </a>
+            {{ exam.start_datetime|date:"Y-m-d H:i" }}<br>
+            ~ {{ exam.end_datetime|date:"Y-m-d H:i" }}
           </td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="5">No exams found.</td>
+          <td>
+            {% if now < exam.start_datetime %}
+              <span class="badge bg-secondary">예정</span>
+            {% elif now > exam.end_datetime %}
+              <span class="badge bg-dark">만료</span>
+            {% else %}
+              <span class="badge bg-success">진행 중</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'exams:exam_edit'   exam.pk %}" class="btn btn-sm btn-outline-primary">수정</a>
+            <a href="{% url 'exams:exam_print'  exam.pk %}" class="btn btn-sm btn-outline-secondary">인쇄</a>
+            <a href="{% url 'exams:session_list' exam.pk %}" class="btn btn-sm btn-outline-success">응시자 보기</a>
+          </td>
         </tr>
       {% endfor %}
     </tbody>

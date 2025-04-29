@@ -2,6 +2,7 @@
 
 from django.db import models
 from .base_problem import BaseProblem
+from ...problems.utils.nlp import tokenize_terms
 
 class SubjectiveKeyword(models.Model):
     word = models.CharField(max_length=100, unique=True, verbose_name='대표 키워드')
@@ -29,6 +30,18 @@ class SubjectiveProblem(BaseProblem):
 
     def __str__(self):
         return self.content[:50]
+    
+    def grade_text(self, answer_text: str) -> bool:
+        tokens = tokenize_terms(answer_text or '')
+        mappings = QuestionKeywordMapping.objects.filter(question=self).select_related('keyword')
+
+        terms = set()
+        for m in mappings:
+            terms.add(m.keyword.word.lower())
+            for syn in m.keyword.synonyms:
+                terms.add(syn.lower())
+
+        return bool(tokens & terms)   
 
 
 class QuestionKeywordMapping(models.Model):

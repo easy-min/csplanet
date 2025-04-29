@@ -2,7 +2,6 @@
 
 from .create_objective   import objective_upsert, detail_objective
 from .create_subjective import subjective_upsert, detail_subjective
-from .solve_problem     import solve_problems    # ← 이 줄을 추가
 from .create_problem import select_problem_type
 
 __all__ = [
