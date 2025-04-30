@@ -1,7 +1,37 @@
-{% extends "base.html" %} {% block title %}문제 풀러가기 - Tok! CS{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}“{{ exam.title }}” 문제 목록{% endblock %}
+
 {% block content %}
-<div class="content-card">
-  <h2>문제를 풀러갈 준비가 되셨나요?</h2>
-  <p>여기에 나중에 실제 풀기 화면으로 연결되는 버튼 등을 넣으면 됩니다.</p>
+<div class="container my-5">
+  <h2 class="mb-4">“{{ exam.title }}” 문제 목록</h2>
+
+  {% if questions %}
+    <ul class="list-group">
+      {% for q in questions %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>문제 {{ forloop.counter }}.</strong>
+            {% if q.objective %}[객관식]{% else %}[주관식]{% endif %}
+            {{ q.objective.content|default:q.subjective.content|truncatechars:80 }}
+          </div>
+          <a
+            href="{% url 'exams:exam_take' exam.pk %}?highlight=q{{ forloop.counter }}"
+            class="btn btn-outline-primary btn-sm"
+          >
+            풀기
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-warning">등록된 문제가 없습니다.</div>
+  {% endif %}
+
+  <div class="mt-4">
+    <a href="{% url 'problems:list_exams_to_solve' %}" class="btn btn-secondary">
+      시험 목록으로 돌아가기
+    </a>
+  </div>
 </div>
 {% endblock %}

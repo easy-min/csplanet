@@ -3,13 +3,12 @@
 from django.urls import path
 from .views.create_objective  import objective_upsert, detail_objective
 from .views.create_subjective import subjective_upsert, detail_subjective
-from .views                    import solve_problems, select_problem_type
+from .views                    import select_problem_type
 
 app_name = 'problems'
 
 urlpatterns = [
     path('create/',                 select_problem_type,   name='select_problem_type'),
-    path('solve/',                  solve_problems,        name='solve_problems'),
 
     # 객관식
     path('objective/create/',       objective_upsert,      name='create_objective'),

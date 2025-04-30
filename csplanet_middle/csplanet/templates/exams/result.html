@@ -1,10 +1,139 @@
-{% extends "base.html" %} {% block title %}Result{% endblock %} {% block content
-%}
-<div class="container my-5 text-center">
-  <h2>{{ result.session.exam.title }} - Your Score</h2>
-  <p>Total Score: {{ result.total_score }}</p>
-  <p>Status: <strong>{{ result.status }}</strong></p>
-  <a href="{% url 'exams:exam_available' %}" class="btn btn-primary"
-    >Back to Tests</a
-  >
+{% extends "base.html" %}
+{% block title %}{{ result.session.exam.title }} 결과{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>{{ result.session.exam.title }} 결과</h2>
+  <p class="lead">
+    응시자: {{ result.session.user.username }} /
+    시작: {{ result.session.started_at|date:"Y-m-d H:i" }} /
+    완료: {{ result.graded_at|date:"Y-m-d H:i" }}
+  </p>
+
+  <h4>총점: {{ result.total_score }}</h4>
+  <h5>
+    상태:
+    <span class="badge
+      {% if result.status == 'FAIL' %}
+        bg-danger
+      {% elif result.status == 'WARNING' %}
+        bg-warning
+      {% elif result.status == 'PASS' %}
+        bg-success
+      {% else %}
+        bg-primary
+      {% endif %}
+    ">
+      {{ result.status }}
+    </span>
+  </h5>
+
+  <div class="mt-4">
+    {% for answer in result.session.answers.all %}
+      {% with q=answer.question %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5>
+              문제 {{ forloop.counter }}.
+              {% if q.objective %}객관식{% else %}주관식{% endif %}
+            </h5>
+
+            <p class="mb-3">
+              {% if q.objective %}
+                {{ q.objective.content }}
+              {% else %}
+                {{ q.subjective.content }}
+              {% endif %}
+            </p>
+
+            {% if q.objective %}
+              {# 객관식: 내가 고른 것 vs 실제 정답 #}
+              <ul class="list-group">
+                {% for choice in q.objective.choices.all %}
+                  {% if choice.id == answer.selected_choice_id %}
+                    <li class="list-group-item
+                      {% if choice.is_correct %}
+                        list-group-item-success
+                      {% else %}
+                        list-group-item-danger
+                      {% endif %}
+                    ">
+                      ▶ {{ choice.label }}. {{ choice.text }}
+                      {% if choice.is_correct %}
+                        <span class="badge bg-white text-success ms-2">
+                          내 정답 (정답)
+                        </span>
+                      {% else %}
+                        <span class="badge bg-white text-danger ms-2">
+                          내 선택
+                        </span>
+                      {% endif %}
+                    </li>
+                  {% else %}
+                    {% if choice.is_correct %}
+                      <li class="list-group-item list-group-item-success">
+                        ✔ {{ choice.label }}. {{ choice.text }}
+                        <span class="badge bg-white text-success ms-2">
+                          정답
+                        </span>
+                      </li>
+                    {% else %}
+                      <li class="list-group-item">
+                        {{ choice.label }}. {{ choice.text }}
+                      </li>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            {% else %}
+              {# 주관식: 내 답안 vs 모범답안 #}
+              <div class="mb-2">
+                <strong>내 답안:</strong>
+                <div class="border rounded p-2
+                  {% if answer.is_correct %}
+                    bg-light-success
+                  {% else %}
+                    bg-light-danger
+                  {% endif %}
+                ">
+                  {{ answer.text_answer }}
+                </div>
+                {% if not answer.is_correct %}
+                  <small class="text-danger">
+                    키워드를 포함하지 않아 오답으로 처리되었습니다.
+                  </small>
+                {% endif %}
+              </div>
+              <div class="mb-3">
+                <strong>모범답안:</strong>
+                <div class="border rounded p-2 bg-light">
+                  {{ q.subjective.example_answer }}
+                </div>
+              </div>
+            {% endif %}
+
+          </div>
+        </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+
+  <div class="text-center mt-5">
+    {% if user.is_superuser %}
+      <a
+        href="{% url 'exams:exam_list' %}"
+        class="btn btn-secondary btn-lg"
+      >
+        시험 목록으로
+      </a>
+    {% else %}
+      <a
+        href="{% url 'exams:list_exams' %}"
+        class="btn btn-secondary btn-lg"
+      >
+        시험 목록으로
+      </a>
+    {% endif %}
+  </div>
 </div>
+{% endblock %}
