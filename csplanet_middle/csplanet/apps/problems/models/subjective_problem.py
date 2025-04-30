@@ -2,7 +2,6 @@
 
 from django.db import models
 from .base_problem import BaseProblem
-from ...problems.utils.nlp import tokenize_terms
 
 class SubjectiveKeyword(models.Model):
     word = models.CharField(max_length=100, unique=True, verbose_name='대표 키워드')
@@ -16,37 +15,9 @@ class SubjectiveKeyword(models.Model):
         return self.word
 
 
-class SubjectiveProblem(BaseProblem):
-    subjective_keywords = models.ManyToManyField(
-        SubjectiveKeyword,
-        through='problems.QuestionKeywordMapping',  # 앱 레이블 포함
-        related_name='subjective_questions',
-        verbose_name='채점용 키워드',
-    )
-
-    class Meta:
-        verbose_name = '주관식 문제'
-        verbose_name_plural = '주관식 문제들'
-
-    def __str__(self):
-        return self.content[:50]
-    
-    def grade_text(self, answer_text: str) -> bool:
-        tokens = tokenize_terms(answer_text or '')
-        mappings = QuestionKeywordMapping.objects.filter(question=self).select_related('keyword')
-
-        terms = set()
-        for m in mappings:
-            terms.add(m.keyword.word.lower())
-            for syn in m.keyword.synonyms:
-                terms.add(syn.lower())
-
-        return bool(tokens & terms)   
-
-
 class QuestionKeywordMapping(models.Model):
     question = models.ForeignKey(
-        SubjectiveProblem,                   # 직접 클래스 참조
+        'problems.SubjectiveProblem',
         on_delete=models.CASCADE,
         verbose_name='문제',
     )
@@ -68,3 +39,36 @@ class QuestionKeywordMapping(models.Model):
 
     def __str__(self):
         return f'{self.question.id} ↔ {self.keyword.word}'
+
+
+class SubjectiveProblem(BaseProblem):
+    subjective_keywords = models.ManyToManyField(
+        SubjectiveKeyword,
+        through=QuestionKeywordMapping,
+        related_name='subjective_questions',
+        verbose_name='채점용 키워드',
+    )
+
+    class Meta:
+        verbose_name = '주관식 문제'
+        verbose_name_plural = '주관식 문제들'
+
+    def __str__(self):
+        return self.content[:50]
+    
+    def grade_text(self, answer_text: str) -> bool:
+        """
+        응답 텍스트에 대표 키워드나 동의어가 포함되어 있는지 간단히 검사합니다.
+        """
+        if not answer_text:
+            return False
+        text = answer_text.lower()
+        mappings = QuestionKeywordMapping.objects.filter(question=self).select_related('keyword')
+
+        for m in mappings:
+            # 대표 키워드 + 동의어 리스트
+            candidates = [m.keyword.word.lower()] + [syn.lower() for syn in m.keyword.synonyms]
+            for term in candidates:
+                if term and term in text:
+                    return True
+        return False

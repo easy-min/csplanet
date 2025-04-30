@@ -3,6 +3,7 @@ from django.shortcuts      import render, get_object_or_404, redirect
 from django.utils          import timezone
 from django.db.models      import Sum, Prefetch
 from ..models              import Exam, TestSession, ExamQuestion, ExamResult, UserAnswer
+from django.contrib.auth.decorators import login_required
 from ..forms               import AnswerForm
 import datetime
 
@@ -19,8 +20,6 @@ import calendar
 from datetime import date
 from django.shortcuts import render
 from django.urls import reverse
-from problems.utils.nlp   import tokenize_terms
-from problems.models.subjective_problem import QuestionKeywordMapping
 
 def monthly_calendar(request):
     year  = int(request.GET.get('year', timezone.now().year))
@@ -71,7 +70,7 @@ def monthly_calendar(request):
         'next_year':   nxt.year,
         'next_month':  nxt.month,
     })
-
+@login_required
 def list_exams(request):
     now   = timezone.now()
     exams = list(Exam.objects.all().order_by('-start_datetime'))
@@ -235,26 +234,13 @@ def exam_result(request, session_pk):
     })
 
 
-def _grade_subjective(q, answer):
+def _grade_subjective(q: ExamQuestion, answer: UserAnswer) -> UserAnswer:
     """
     q: ExamQuestion
     answer: UserAnswer 인스턴스 (commit=False 상태)
     """
-    text = (answer.text_answer or '').lower()
-    tokens = tokenize_terms(text)
-
-    # 매핑된 키워드 + 동의어 모두 수집
-    mappings = QuestionKeywordMapping.objects.filter(question=q.subjective).select_related('keyword')
-    terms = {
-        m.keyword.word.lower()
-        for m in mappings
-    }
-    # JSONField 에 담긴 동의어 추가
-    for m in mappings:
-        for syn in m.keyword.synonyms:
-            terms.add(syn.lower())
-
-    matched = bool(tokens & terms)
+    # delegate all the heavy lifting to your model’s grade_text
+    matched = q.subjective.grade_text(answer.text_answer or '')
     answer.is_correct = matched
     answer.score      = q.weight if matched else 0
     return answer
