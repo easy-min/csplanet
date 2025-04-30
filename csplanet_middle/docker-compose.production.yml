@@ -1,80 +1,76 @@
-volumes:
-  production_postgres_data: {}
-  production_postgres_data_backups: {}
-  production_traefik: {}
-  production_django_media: {}
+version: "3.9"
 
-  production_redis_data: {}
+volumes:
+  csplanet_prod_postgres_data: {}
+  csplanet_prod_redis_data: {}
+  csplanet_prod_media: {}
 
 services:
-  django: &django
+  django:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-
-    image: csplanet_production_django
+    image: csplanet_prod_django
+    container_name: csplanet_prod_django
+    ports:
+      - "8000:8000"
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - production_django_media:/app/csplanet/media
+      - csplanet_prod_media:/app/csplanet/media
     depends_on:
       - postgres
       - redis
     env_file:
       - ./.envs/.production/.env
       - ./.envs/.production/.postgres
-    command: /start
 
   postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: csplanet_production_postgres
+    image: csplanet_prod_postgres
+    container_name: csplanet_prod_postgres
     volumes:
-      - production_postgres_data:/var/lib/postgresql/data
-      - production_postgres_data_backups:/backups
+      - csplanet_prod_postgres_data:/var/lib/postgresql/data
     env_file:
       - ./.envs/.production/.postgres
 
-  traefik:
-    build:
-      context: .
-      dockerfile: ./compose/production/traefik/Dockerfile
-    image: csplanet_production_traefik
-    depends_on:
-      - django
-    volumes:
-      - production_traefik:/etc/traefik/acme
-    ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
-      - "0.0.0.0:5555:5555"
-
   redis:
-    image: docker.io/redis:6
-
+    image: redis:6
+    container_name: csplanet_prod_redis
     volumes:
-      - production_redis_data:/data
+      - csplanet_prod_redis_data:/data
 
   celeryworker:
-    <<: *django
-    image: csplanet_production_celeryworker
-    command: /start-celeryworker
-
-  celerybeat:
-    <<: *django
-    image: csplanet_production_celerybeat
-    command: /start-celerybeat
-
-  flower:
-    <<: *django
-    image: csplanet_production_flower
-    command: /start-flower
-
-  nginx:
     build:
       context: .
-      dockerfile: ./compose/production/nginx/Dockerfile
-    image: csplanet_production_nginx
+      dockerfile: ./compose/production/django/Dockerfile
+    image: csplanet_prod_celeryworker
+    container_name: csplanet_prod_celeryworker
+    command: /start-celeryworker
+    volumes:
+      - csplanet_prod_media:/app/csplanet/media
     depends_on:
       - django
+      - redis
+      - postgres
+    env_file:
+      - ./.envs/.production/.env
+      - ./.envs/.production/.postgres
+
+  celerybeat:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: csplanet_prod_celerybeat
+    container_name: csplanet_prod_celerybeat
+    command: /start-celerybeat
     volumes:
-      - production_django_media:/usr/share/nginx/media:ro
+      - csplanet_prod_media:/app/csplanet/media
+    depends_on:
+      - django
+      - redis
+      - postgres
+    env_file:
+      - ./.envs/.production/.env
+      - ./.envs/.production/.postgres
