@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "시험 일정" %}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">{% trans "이번 주 시험 마감 일정" %}</h2>
+  <table class="table table-bordered text-center">
+    <thead class="table-light">
+      <tr>
+        {% for day in weekdays %}
+          <th>{{ day }}요일</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        {% for exams_for_day in calendar_days %}
+          <td style="vertical-align: top; min-width: 150px;">
+            {% if exams_for_day %}
+              {% for exam in exams_for_day %}
+                <div class="mb-3 p-2 border rounded">
+                  <strong>{{ exam.title }}</strong><br/>
+                  <small>
+                    {% trans "마감" %}: {{ exam.end_datetime|date:"H:i" }}
+                  </small><br/>
+                  {% if exam.user_result %}
+                    <span class="badge bg-success">
+                      {{ exam.user_result.total_score|floatformat:2 }}{% trans "점" %}
+                    </span>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <small class="text-muted">—</small>
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

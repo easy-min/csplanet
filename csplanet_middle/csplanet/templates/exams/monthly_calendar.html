@@ -1,0 +1,63 @@
+{# templates/exams/monthly_calendar.html #}
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "시험 일정" %} | Tok! CS{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-secondary btn-sm">&larr;</a>
+    <h2 class="mb-0">{% trans "시험 일정" %} — {{ year }}년 {{ month }}월</h2>
+    <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-secondary btn-sm">&rarr;</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered text-center mb-0" style="table-layout: fixed; width: 100%;">
+      <thead class="table-light">
+        <tr>
+          <th>{% trans "월" %}</th>
+          <th>{% trans "화" %}</th>
+          <th>{% trans "수" %}</th>
+          <th>{% trans "목" %}</th>
+          <th>{% trans "금" %}</th>
+          <th>{% trans "토" %}</th>
+          <th>{% trans "일" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for week in month_weeks %}
+          <tr>
+            {% for cell in week %}
+              <td class="
+                     {% if cell.date == today %}table-primary{% endif %}
+                     {% if cell.date.month != month %} text-muted{% endif %}
+                   " style="vertical-align: top; height:120px; padding:0.5rem;">
+                <div class="d-flex flex-column h-100">
+                  <small class="text-end">{{ cell.date.day }}</small>
+                  <div class="mt-auto">
+                    {% for exam in cell.exams %}
+                      <a href="{% if exam.user_result %}
+                                  {% url 'exams:exam_result' session_pk=exam.user_result.session.pk %}
+                               {% else %}
+                                  {% url 'exams:exam_take' exam.pk %}
+                               {% endif %}"
+                         class="d-block mb-1 p-1 border rounded {{ exam.user_result|yesno:'border-success,border-primary' }} text-decoration-none">
+                        <div class="small fw-bold">{{ exam.title }}</div>
+                        <div class="small">마감 {{ exam.end_datetime|date:"H:i" }}</div>
+                        {% if exam.user_result %}
+                          <span class="badge bg-success">{{ exam.user_result.total_score|floatformat:2 }}점</span>
+                        {% endif %}
+                      </a>
+                    {% endfor %}
+                  </div>
+                </div>
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
