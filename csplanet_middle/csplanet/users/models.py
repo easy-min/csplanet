@@ -25,7 +25,7 @@ class User(AbstractUser):
     username = None  # type: ignore[assignment]
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = [name]
+    REQUIRED_FIELDS = ["name"]
 
     objects: ClassVar[UserManager] = UserManager()
 

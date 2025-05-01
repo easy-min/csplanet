@@ -14,7 +14,8 @@ SECRET_KEY = env(
     default="MoIztXfuHs8n0fZj7YgmHmbFGNg6PsUYNIFtw4YVs0caGtaYoCG3zaWn7l4xIPTg",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+#ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["*"]
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -28,10 +29,14 @@ CACHES = {
 
 # EMAIL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend",
-)
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-back
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = env("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")           # 예: your.account@gmail.com
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")   # 앱 비밀번호 16자리
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # WhiteNoise
 # ------------------------------------------------------------------------------
