@@ -58,7 +58,7 @@
                         list-group-item-danger
                       {% endif %}
                     ">
-                      ▶ {{ choice.label }}. {{ choice.text }}
+                      ▶ {{ forloop.counter }}. {{ choice.content }}
                       {% if choice.is_correct %}
                         <span class="badge bg-white text-success ms-2">
                           내 정답 (정답)
@@ -72,14 +72,14 @@
                   {% else %}
                     {% if choice.is_correct %}
                       <li class="list-group-item list-group-item-success">
-                        ✔ {{ choice.label }}. {{ choice.text }}
+                        ✔ {{ forloop.counter }}. {{ choice.content }}
                         <span class="badge bg-white text-success ms-2">
                           정답
                         </span>
                       </li>
                     {% else %}
                       <li class="list-group-item">
-                        {{ choice.label }}. {{ choice.text }}
+                        {{ forloop.counter }}. {{ choice.content }}
                       </li>
                     {% endif %}
                   {% endif %}
@@ -120,17 +120,11 @@
 
   <div class="text-center mt-5">
     {% if user.is_superuser %}
-      <a
-        href="{% url 'exams:exam_list' %}"
-        class="btn btn-secondary btn-lg"
-      >
+      <a href="{% url 'exams:exam_list' %}" class="btn btn-secondary btn-lg">
         시험 목록으로
       </a>
     {% else %}
-      <a
-        href="{% url 'exams:list_exams' %}"
-        class="btn btn-secondary btn-lg"
-      >
+      <a href="{% url 'exams:list_exams' %}" class="btn btn-secondary btn-lg">
         시험 목록으로
       </a>
     {% endif %}

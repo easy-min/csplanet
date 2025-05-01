@@ -25,33 +25,30 @@
             {% endif %}
           </p>
 
-          {# 해당 문제의 AnswerForm #}
-          {% with form=forms_dict.question.id %}
-            {% if question.objective %}
-              {% for choice in question.objective.choices.all %}
-                <div class="form-check">
-                  <input 
-                    class="form-check-input"
-                    type="radio"
-                    name="{{ question.id }}-selected_choice"
-                    value="{{ choice.id }}"
-                    id="q{{ question.id }}c{{ forloop.counter }}"
-                  >
-                  <label class="form-check-label" for="q{{ question.id }}c{{ forloop.counter }}">
-                    {{ choice.label }}. {{ choice.text }}
-                  </label>
-                </div>
-              {% endfor %}
-            {% else %}
-              <div class="mb-3">
-                <textarea 
-                  class="form-control"
-                  name="{{ question.id }}-text_answer" 
-                  rows="4"
-                ></textarea>
+          {% if question.objective %}
+            {% for choice in question.objective.choices.all %}
+              <div class="form-check">
+                <input 
+                  class="form-check-input"
+                  type="radio"
+                  name="{{ question.id }}-selected_choice"
+                  value="{{ choice.id }}"
+                  id="q{{ question.id }}c{{ forloop.counter }}"
+                >
+                <label class="form-check-label" for="q{{ question.id }}c{{ forloop.counter }}">
+                  {{ forloop.counter }}. {{ choice.content }}
+                </label>
               </div>
-            {% endif %}
-          {% endwith %}
+            {% endfor %}
+          {% else %}
+            <div class="mb-3">
+              <textarea 
+                class="form-control"
+                name="{{ question.id }}-text_answer" 
+                rows="4"
+              ></textarea>
+            </div>
+          {% endif %}
 
         </div>
       </div>
