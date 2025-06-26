@@ -10,33 +10,45 @@ from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/",
-        TemplateView.as_view(template_name="pages/about.html"),
-        name="about",
-    ),
-    # Django Admin, use {% url 'admin:index' %}
-    path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("csplanet.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
+    # path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    # path(
+    #     "about/",
+    #     TemplateView.as_view(template_name="pages/about.html"),
+    #     name="about",
+    # ),
+    # # Django Admin, use {% url 'admin:index' %}
+    # path(settings.ADMIN_URL, admin.site.urls),
+    # # User management
+    # path("users/", include("csplanet.users.urls", namespace="users")),
+    # path("accounts/", include("allauth.urls")),
 
-    # 문제 생성 관리
-    path("problems/", include("csplanet.apps.problems.urls", namespace="problems")),
+    # # 문제 생성 관리
+    # path("problems/", include("csplanet.apps.problems.urls", namespace="problems")),
 
-    # 시험 응시시 관리
-    path("exams/", include("csplanet.apps.exams.urls", namespace="exams")),
+    # # 시험 응시시 관리
+    # path("exams/", include("csplanet.apps.exams.urls", namespace="exams")),
 
-    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+    # *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
 
 # API URLS
-urlpatterns += [
+from django.urls import path, include
+from rest_framework.authtoken.views import obtain_auth_token
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+api_urlpatterns = [
+    path("api/", include("csplanet.apps.problems.urls")),
+    path("api/users/", include("csplanet.users.urls")),
+    path('api/exams/', include('csplanet.apps.exams.urls', namespace='exams')),
+    path('admin/', admin.site.urls),
     # API base url
-    path("api/", include("config.api_router")),
-    # DRF auth token
-    path("api/auth-token/", obtain_auth_token, name="obtain_auth_token"),
+    # path("api/", include("config.api_router")),
+    # DRF auth token (dj-rest-auth 사용 시 생략 가능)
+    # path("api/auth-token/", obtain_auth_token, name="obtain_auth_token"),
+    # dj-rest-auth
+    path('api/auth/', include('dj_rest_auth.urls')),
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
+    # API 문서화
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
         "api/docs/",
@@ -44,6 +56,8 @@ urlpatterns += [
         name="api-docs",
     ),
 ]
+
+urlpatterns += api_urlpatterns
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit

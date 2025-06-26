@@ -16,8 +16,9 @@ services:
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs/.local/.env
-      - ./.envs/.local/.postgres
+      - ./.envs/.env
+    environment:
+      - USE_DOCKER=yes
     ports:
       - "8000:8000"
     command: python manage.py runserver 0.0.0.0:8000

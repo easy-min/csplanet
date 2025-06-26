@@ -1,22 +1,16 @@
-# csplanet/apps/problems/urls.py
+app_name = "problems"
 
-from django.urls import path
-from .views.create_objective  import objective_upsert, detail_objective
-from .views.create_subjective import subjective_upsert, detail_subjective
-from .views                    import select_problem_type
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .api.objective_views import ChapterListByTopicView, ObjectiveProblemViewSet, TopicViewSet
+from .api.subjective_views import SubjectiveProblemViewSet
 
-app_name = 'problems'
+router = DefaultRouter()
+router.register(r'objective-problems', ObjectiveProblemViewSet)
+router.register(r'subjective-problems', SubjectiveProblemViewSet)
+router.register(r'topics', TopicViewSet)  # 추가
 
 urlpatterns = [
-    path('create/',                 select_problem_type,   name='select_problem_type'),
-
-    # 객관식
-    path('objective/create/',       objective_upsert,      name='create_objective'),
-    path('objective/<int:pk>/',     detail_objective,      name='detail_objective'),
-    path('objective/<int:pk>/edit/',objective_upsert,      name='edit_objective'),
-
-    # 주관식
-    path('subjective/create/',      subjective_upsert,     name='create_subjective'),
-    path('subjective/detail/<int:pk>/', detail_subjective,  name='detail_subjective'),
-    path('subjective/<int:pk>/edit/',    subjective_upsert,  name='edit_subjective'),
+    path('', include(router.urls)),
+    path('topics/<int:topic_id>/chapters/', ChapterListByTopicView.as_view(), name='chapter-list-by-topic'),
 ]

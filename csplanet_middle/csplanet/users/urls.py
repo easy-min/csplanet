@@ -1,12 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .api.views import UserViewSet  # UserRegistrationView, CustomAuthToken 제거
 
-from .views import user_detail_view
-from .views import user_redirect_view
-from .views import user_update_view
+router = DefaultRouter()
+router.register("", UserViewSet, basename="user")
 
 app_name = "users"
+
 urlpatterns = [
-    path("~redirect/", view=user_redirect_view, name="redirect"),
-    path("~update/", view=user_update_view, name="update"),
-    path("<int:pk>/", view=user_detail_view, name="detail"),
+    path('', include(router.urls)),
 ]
