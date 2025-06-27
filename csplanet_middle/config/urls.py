@@ -35,26 +35,18 @@ urlpatterns = [
 from django.urls import path, include
 from rest_framework.authtoken.views import obtain_auth_token
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-
+from csplanet.apps.exams.urls import admin_urls  # 반드시 import
 api_urlpatterns = [
-    path("api/", include("csplanet.apps.problems.urls")),
-    path("api/users/", include("csplanet.users.urls")),
-    path('api/exams/', include('csplanet.apps.exams.urls', namespace='exams')),
+    path("api/problems/", include("csplanet.apps.problems.urls", namespace='problems')),
+    path("api/users/", include("csplanet.users.urls", namespace='users')),
+    path("api/admin/", include("csplanet.apps.exams.urls.admin_urls", namespace='admin-exams')),
+    # path("api/admin/", include((admin_urls.urlpatterns, admin_urls.app_name), namespace='admin-exams')),
+    path('api/exams/', include('csplanet.apps.exams.urls.user_urls', namespace='user-exams')),
     path('admin/', admin.site.urls),
-    # API base url
-    # path("api/", include("config.api_router")),
-    # DRF auth token (dj-rest-auth 사용 시 생략 가능)
-    # path("api/auth-token/", obtain_auth_token, name="obtain_auth_token"),
-    # dj-rest-auth
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
-    # API 문서화
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="api-schema"),
-        name="api-docs",
-    ),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
 ]
 
 urlpatterns += api_urlpatterns

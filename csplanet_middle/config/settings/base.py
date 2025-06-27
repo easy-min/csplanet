@@ -156,7 +156,9 @@ CSRF_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 
 # 이메일 (base.py에서는 기본값만)
-EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+# EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend")
+# 이메일 콘솔 출력
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_TIMEOUT = 5
 
 # 관리자
@@ -183,6 +185,9 @@ LOGGING = {
     },
     "root": {"level": "INFO", "handlers": ["console"]},
 }
+
+# SITE_ID 지정
+SITE_ID = 1
 
 # Redis/Celery
 REDIS_URL = env("REDIS_URL", default="redis://redis:6379/0")
@@ -237,9 +242,9 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": "/api/",
 }
 
-# 환경변수 로드 확인
-print("DEBUG:", env("DJANGO_DEBUG", default=None))
-print("SECRET_KEY:", env("DJANGO_SECRET_KEY", default=None))
-print("DATABASE_URL:", env("DATABASE_URL", default=None))
-print("EMAIL_HOST_USER:", env("EMAIL_HOST_USER", default=None))
-print("EMAIL_HOST_PASSWORD:", env("EMAIL_HOST_PASSWORD", default=None))
+# # 환경변수 로드 확인
+# print("DEBUG:", env("DJANGO_DEBUG", default=None))
+# print("SECRET_KEY:", env("DJANGO_SECRET_KEY", default=None))
+# print("DATABASE_URL:", env("DATABASE_URL", default=None))
+# print("EMAIL_HOST_USER:", env("EMAIL_HOST_USER", default=None))
+# print("EMAIL_HOST_PASSWORD:", env("EMAIL_HOST_PASSWORD", default=None))
