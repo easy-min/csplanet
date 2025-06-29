@@ -183,7 +183,7 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "root": {"level": "DEBUG", "handlers": ["console"]},
 }
 
 # SITE_ID 지정
@@ -224,6 +224,7 @@ SOCIALACCOUNT_FORMS = {"signup": "csplanet.users.forms.UserSocialSignupForm"}
 
 # DRF
 REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'csplanet.apps.exam.api.exception_handlers.custom_exception_handler',
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),

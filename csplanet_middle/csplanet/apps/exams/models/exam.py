@@ -54,6 +54,7 @@ class ExamQuestion(models.Model):
         on_delete=models.CASCADE
     )
     weight = models.FloatField()
+    order = models.PositiveIntegerField(default=0) 
 
     def clean(self):
         if not (bool(self.objective) ^ bool(self.subjective)):
