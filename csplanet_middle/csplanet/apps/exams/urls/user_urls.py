@@ -2,7 +2,7 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from ..api.exam import ExamViewSet, UserSessionViewSet
+from ..api.user_exam_view import ExamViewSet, UserSessionViewSet
 
 app_name = 'user-exams'
 
